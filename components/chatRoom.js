@@ -9,7 +9,7 @@ export default function ChatRoom(props) {
   const dummySpace = useRef();
   // user details
   const { uid, displayName, photoURL } = props.user;
-  const { group } = props.group;
+  const { id, groupName } = props.group;
 
   const [messages, setMessages] = useState([]);
   const [newMessage, setNewMessage] = useState("");
@@ -26,7 +26,9 @@ export default function ChatRoom(props) {
     // });
 
     // firestore で groupに紐づくメッセージを取得するように変更
-    db.collection("messages")
+    db.collection("chatRooms")
+      .doc(id)
+      .collection("messages")
       .orderBy("createdAt")
       .limit(100)
       .onSnapshot((querySnapShot) => {
@@ -43,13 +45,16 @@ export default function ChatRoom(props) {
     e.preventDefault();
 
     // TODO groupの下にmessageがつくようにする
-    db.collection("messages").add({
-      text: newMessage,
-      createdAt: firebase.firestore.FieldValue.serverTimestamp(),
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
-      uid,
-      displayName,
-      photoURL,
+    db.collection("chatRooms")
+      .doc(id)
+      .collection("messages")
+      .add({
+        text: newMessage,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        uid,
+        displayName,
+        photoURL,
     });
 
     setNewMessage("");
@@ -57,6 +62,8 @@ export default function ChatRoom(props) {
     // scroll down the chat
     dummySpace.current.scrollIntoView({ behavor: "smooth" });
   };
+
+  console.log(props.group);
 
   return (
     <main id="chat_room">

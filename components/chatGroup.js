@@ -11,7 +11,7 @@ export default function ChatGroup(props) {
 
   const [groups, setGroups] = useState([]);
   const [newGroup, setNewGroup] = useState("");
-  const [selectedGroup, setSelectedGroup] = useState({});
+  const [selectedGroup, setSelectedGroup] = useState("");
 
   useEffect(() => {
     db.collection("chatGroups")
@@ -30,11 +30,26 @@ export default function ChatGroup(props) {
   const handleSubmit = (e) => {
     e.preventDefault();
 
-    db.collection("chatGroups").add({
-      displayName,
+    // idを付与したい
+    const collection = db.collection("chatGroups");
+    const newDoc = collection.doc().id;
+
+    let newChatGroup = {
+      id: newDoc,
+      displayName: newGroup,
       createdAt: firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    }
+
+    collection.doc(newDoc).set({
+      ...newChatGroup
     });
+
+    // db.collection("chatGroups").add({
+    //   displayName: newGroup,
+    //   createdAt: firebase.firestore.FieldValue.serverTimestamp(),
+    //   updatedAt: firebase.firestore.FieldValue.serverTimestamp(),
+    // });
   }
 
   const showSelectedGroup = (group) => {
@@ -48,7 +63,7 @@ export default function ChatGroup(props) {
         {groups.map((group) => (
           <li key={group.id}>
             <section>
-              {group.displayName ? <span onClick={() => showSelectedGroup(group)}>{group.displayName}</span> : null}
+              {group.displayName ? <a onClick={() => showSelectedGroup(group)}>{group.displayName}</a> : null}
               <br />
             </section>
           </li>
@@ -68,12 +83,12 @@ export default function ChatGroup(props) {
       </form>
       <section id="selected_group">
         {/* ここに上で選択したGroupに紐づくChatRoomをおきたい */}
-        {selectedGroup ? (
+        {selectedGroup == "" ? (
           <>
-            <ChatRoom user={user} db={db}/>
           </>
         ) : (
           <>
+            <ChatRoom user={user} db={db} group={selectedGroup}/>
           </>
         )}
       </section>
